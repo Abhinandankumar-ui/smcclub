@@ -21,33 +21,52 @@ dotenv.config();
 
 const app = express();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// ==========================================
+// __dirname
+// ==========================================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// ===============================
-// Upload directory
-// ===============================
+// ==========================================
+// Upload Directory
+// ==========================================
 const uploadDir = path.join(__dirname, 'uploads');
 
-// Create uploads folder if it doesn't exist
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
-  console.log('Uploads directory created');
 }
 
+console.log('========================================');
 console.log('Upload directory:', uploadDir);
+console.log('Upload directory exists:', fs.existsSync(uploadDir));
+console.log('========================================');
 
-// ===============================
+// ==========================================
 // Middleware
-// ===============================
-app.use(cors());
+// ==========================================
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+);
+
 app.use(express.json());
 
-// Serve uploaded files
-app.use('/uploads', express.static(uploadDir));
+// ==========================================
+// Serve Uploaded Images / Videos
+// ==========================================
+app.use(
+  '/uploads',
+  express.static(uploadDir, {
+    fallthrough: false
+  })
+);
 
-// ===============================
+// ==========================================
 // Routes
-// ===============================
+// ==========================================
 app.use('/api/applications', applicationRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/events', eventRoutes);
@@ -57,9 +76,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/settings', settingsRoutes);
 
-// ===============================
-// Health check
-// ===============================
+// ==========================================
+// Health Check
+// ==========================================
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -67,14 +86,36 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ===============================
+// ==========================================
+// Upload Test
+// ==========================================
+app.get('/api/upload-test', (req, res) => {
+  try {
+    const files = fs.readdirSync(uploadDir);
+
+    res.json({
+      success: true,
+      uploadDir,
+      exists: fs.existsSync(uploadDir),
+      fileCount: files.length,
+      files
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ==========================================
 // Port
-// ===============================
+// ==========================================
 const PORT = process.env.PORT || 5000;
 
-// ===============================
+// ==========================================
 // MongoDB + Server
-// ===============================
+// ==========================================
 mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
@@ -84,8 +125,9 @@ mongoose
 
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server running on port ${PORT}`);
+      console.log(`Uploads available at: /uploads`);
     });
   })
-  .catch(err => {
+  .catch((err) => {
     console.error('Mongo error:', err.message);
   });
