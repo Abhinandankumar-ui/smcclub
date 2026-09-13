@@ -15,12 +15,15 @@ export const getGallery = async (req, res) => {
 
 export const uploadGallery = async (req, res) => {
   try {
+    console.log('========== GALLERY UPLOAD ==========');
+    console.log('Body:', req.body);
+    console.log('Files:', req.files);
+    console.log('File:', req.file);
+
     const data = { ...req.body };
 
     const uploadedFiles = req.files || [];
-
-    // First uploaded file
-    const mainFile = uploadedFiles[0];
+    const mainFile = req.file || uploadedFiles[0];
 
     if (mainFile) {
       const isVideo =
@@ -89,20 +92,17 @@ export const uploadGallery = async (req, res) => {
 };
 
 
-export const updateGallery = async (req, res) => {
+export const uploadGallery = async (req, res) => {
   try {
-    const item = await Gallery.findById(req.params.id);
-
-    if (!item) {
-      return res.status(404).json({
-        error: 'Gallery item not found'
-      });
-    }
+    console.log('========== GALLERY UPLOAD ==========');
+    console.log('Body:', req.body);
+    console.log('Files:', req.files);
+    console.log('File:', req.file);
 
     const data = { ...req.body };
 
     const uploadedFiles = req.files || [];
-    const mainFile = uploadedFiles[0];
+    const mainFile = req.file || uploadedFiles[0];
 
     if (mainFile) {
       const isVideo =
