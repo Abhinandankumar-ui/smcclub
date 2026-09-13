@@ -12,13 +12,30 @@ import { auth } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Get all gallery items
 router.get('/', getGallery);
 
-// Accept any file field name: image, media, video, etc.
-router.post('/', auth, upload.any(), uploadGallery);
+// Upload image/video
+router.post(
+  '/',
+  auth,
+  upload.any(),
+  uploadGallery
+);
 
-router.put('/:id', auth, upload.any(), updateGallery);
+// Update image/video
+router.put(
+  '/:id',
+  auth,
+  upload.any(),
+  updateGallery
+);
 
-router.delete('/:id', auth, deleteGallery);
+// Delete
+router.delete(
+  '/:id',
+  auth,
+  deleteGallery
+);
 
 export default router;
